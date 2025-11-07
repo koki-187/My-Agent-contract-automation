@@ -1,0 +1,108 @@
+```mermaid
+flowchart TD
+    Start([契約作成開始]) --> CheckAuth{認証確認}
+    CheckAuth -->|未認証| Login[ログイン画面へ]
+    Login --> CheckAuth
+    CheckAuth -->|認証済み| SelectClient{既存クライアント?}
+    
+    SelectClient -->|新規| CreateClient[クライアント情報入力]
+    CreateClient --> SaveClient[クライアント保存]
+    SaveClient --> InputContract[契約情報入力]
+    
+    SelectClient -->|既存| SearchClient[クライアント検索]
+    SearchClient --> SelectFromList[クライアント選択]
+    SelectFromList --> InputContract
+    
+    InputContract --> AddItems[契約項目追加]
+    AddItems --> MoreItems{項目追加?}
+    MoreItems -->|はい| AddItems
+    MoreItems -->|いいえ| CalcAmount[契約金額計算]
+    
+    CalcAmount --> ValidateContract{バリデーション}
+    ValidateContract -->|エラー| ShowError[エラー表示]
+    ShowError --> InputContract
+    
+    ValidateContract -->|OK| Preview[契約内容プレビュー]
+    Preview --> ConfirmSave{保存確認}
+    
+    ConfirmSave -->|キャンセル| InputContract
+    ConfirmSave -->|保存| SaveContract[契約保存]
+    
+    SaveContract --> GenerateDoc[契約書生成]
+    GenerateDoc --> CheckApproval{承認フロー?}
+    
+    CheckApproval -->|不要| UpdateStatus1[ステータス更新: 有効]
+    CheckApproval -->|必要| RequestApproval[承認申請]
+    
+    RequestApproval --> NotifyApprover[承認者へ通知]
+    NotifyApprover --> WaitApproval{承認待ち}
+    
+    WaitApproval -->|承認| UpdateStatus2[ステータス更新: 有効]
+    WaitApproval -->|却下| UpdateStatus3[ステータス更新: 却下]
+    UpdateStatus3 --> NotifyRejection[却下通知]
+    NotifyRejection --> End2([終了])
+    
+    UpdateStatus1 --> SendNotification[クライアントへ通知]
+    UpdateStatus2 --> SendNotification
+    
+    SendNotification --> CreateInvoice{請求書自動生成?}
+    CreateInvoice -->|はい| GenerateInvoice[請求書生成]
+    CreateInvoice -->|いいえ| End1([終了])
+    
+    GenerateInvoice --> End1
+    
+    style Start fill:#e1f5e1
+    style End1 fill:#e1f5e1
+    style End2 fill:#ffe1e1
+    style ShowError fill:#ffe1e1
+    style SaveContract fill:#e1e5ff
+    style GenerateDoc fill:#e1e5ff
+    style UpdateStatus1 fill:#fff5e1
+    style UpdateStatus2 fill:#fff5e1
+```
+
+## 契約作成フローの説明
+
+### 主要なステップ
+
+1. **認証確認**
+   - システムへのアクセス権限を確認
+   - 未認証の場合はログイン画面へリダイレクト
+
+2. **クライアント選択**
+   - 既存クライアントから選択、または新規クライアント情報を入力
+
+3. **契約情報入力**
+   - 契約期間、金額、条件などの基本情報を入力
+   - 複数の契約項目を追加可能
+
+4. **バリデーション**
+   - 入力内容の妥当性を確認
+   - 必須項目チェック、日付の整合性チェックなど
+
+5. **プレビューと確認**
+   - 入力内容を確認
+   - 修正が必要な場合は入力画面に戻る
+
+6. **保存と契約書生成**
+   - データベースに契約情報を保存
+   - 契約書テンプレートから契約書ドキュメントを自動生成
+
+7. **承認フロー（オプション）**
+   - 組織の規定により承認が必要な場合
+   - 承認者への通知と承認待ち状態
+
+8. **通知と後続処理**
+   - クライアントへの契約締結通知
+   - 必要に応じて請求書を自動生成
+
+### 分岐条件
+
+- **既存クライアント vs 新規クライアント**: システムに登録済みかどうか
+- **承認フロー有無**: 契約金額や組織の規定による
+- **請求書自動生成**: 契約内容に応じて自動生成の有無を選択
+
+### エラーハンドリング
+
+- バリデーションエラー時は入力画面に戻り、エラー内容を表示
+- 承認却下時は終了し、却下理由を通知

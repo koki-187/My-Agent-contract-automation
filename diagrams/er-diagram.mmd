@@ -1,0 +1,114 @@
+```mermaid
+erDiagram
+    CLIENT ||--o{ CONTRACT : "has"
+    CONTRACT ||--o{ INVOICE : "generates"
+    CONTRACT ||--o{ CONTRACT_ITEM : "contains"
+    INVOICE ||--o{ INVOICE_ITEM : "contains"
+    USER ||--o{ CONTRACT : "manages"
+    USER ||--o{ INVOICE : "creates"
+    
+    CLIENT {
+        string client_id PK "クライアントID"
+        string name "クライアント名"
+        string email "メールアドレス"
+        string phone "電話番号"
+        string postal_code "郵便番号"
+        string address "住所"
+        string contact_person "担当者名"
+        date created_at "作成日時"
+        date updated_at "更新日時"
+    }
+    
+    CONTRACT {
+        string contract_id PK "契約ID"
+        string client_id FK "クライアントID"
+        string user_id FK "担当者ID"
+        string contract_number "契約番号"
+        date start_date "契約開始日"
+        date end_date "契約終了日"
+        decimal total_amount "契約総額"
+        string status "契約状態"
+        text terms "契約条件"
+        text notes "備考"
+        date created_at "作成日時"
+        date updated_at "更新日時"
+    }
+    
+    CONTRACT_ITEM {
+        string item_id PK "項目ID"
+        string contract_id FK "契約ID"
+        string description "項目説明"
+        int quantity "数量"
+        decimal unit_price "単価"
+        decimal amount "金額"
+        date created_at "作成日時"
+    }
+    
+    INVOICE {
+        string invoice_id PK "請求書ID"
+        string contract_id FK "契約ID"
+        string user_id FK "作成者ID"
+        string invoice_number "請求書番号"
+        date issue_date "発行日"
+        date due_date "支払期限"
+        decimal total_amount "請求総額"
+        decimal tax_amount "消費税額"
+        string status "支払状態"
+        date paid_date "支払日"
+        text notes "備考"
+        date created_at "作成日時"
+        date updated_at "更新日時"
+    }
+    
+    INVOICE_ITEM {
+        string item_id PK "項目ID"
+        string invoice_id FK "請求書ID"
+        string description "項目説明"
+        int quantity "数量"
+        decimal unit_price "単価"
+        decimal amount "金額"
+        date created_at "作成日時"
+    }
+    
+    USER {
+        string user_id PK "ユーザーID"
+        string username "ユーザー名"
+        string email "メールアドレス"
+        string role "ロール"
+        date created_at "作成日時"
+        date last_login "最終ログイン日時"
+    }
+```
+
+## ER図の説明
+
+### エンティティ
+
+1. **CLIENT（クライアント）**
+   - システムに登録されているクライアント情報を管理
+
+2. **CONTRACT（契約）**
+   - クライアントとの契約情報を管理
+   - 契約状態：draft（下書き）、active（有効）、expired（期限切れ）、terminated（終了）
+
+3. **CONTRACT_ITEM（契約項目）**
+   - 契約に含まれる個別の項目（サービス内容）を管理
+
+4. **INVOICE（請求書）**
+   - 契約に基づいて発行される請求書を管理
+   - 支払状態：unpaid（未払い）、paid（支払済み）、overdue（支払期限超過）
+
+5. **INVOICE_ITEM（請求項目）**
+   - 請求書に含まれる個別の請求項目を管理
+
+6. **USER（ユーザー）**
+   - システムを利用するユーザー情報を管理
+
+### リレーションシップ
+
+- 1つのクライアントは複数の契約を持つことができる（1対多）
+- 1つの契約は複数の請求書を生成できる（1対多）
+- 1つの契約は複数の契約項目を含む（1対多）
+- 1つの請求書は複数の請求項目を含む（1対多）
+- 1人のユーザーは複数の契約を管理できる（1対多）
+- 1人のユーザーは複数の請求書を作成できる（1対多）
